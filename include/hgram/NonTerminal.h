@@ -1,8 +1,0 @@
-//
-// Created by nrx on 04.03.2020.
-//
-
-#ifndef STATE_MACHINE_NONTERMINAL_H
-#define STATE_MACHINE_NONTERMINAL_H
-
-#endif //STATE_MACHINE_NONTERMINAL_H

@@ -4,6 +4,9 @@ project(state_machine)
 
 option(IS_TESTS "test compiling" ON)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 set(SOURCE_DIR ${PROJECT_SOURCE_DIR}/src)
 set(INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
 set(EXTERNAL_LIBS_DIR ${PROJECT_SOURCE_DIR}/external_libs)

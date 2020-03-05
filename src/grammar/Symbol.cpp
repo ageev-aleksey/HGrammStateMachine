@@ -1,7 +1,7 @@
 //
 // Created by nrx on 04.03.2020.
 //
-#include "hgram/Symbol.h"
+#include "grammar/Symbol.h"
 
 
 Symbol::Symbol(char s) {
@@ -19,7 +19,9 @@ Symbol& Symbol::operator=(const Symbol &s) {
 bool Symbol::operator==(const Symbol &s) const {
     return symbol == s.symbol;
 }
-
+char Symbol::toChar() const {
+    return symbol;
+}
 
 std::ostream& operator<< (std::ostream &out, const Symbol &s) {
     out << s.symbol;
@@ -28,6 +30,4 @@ std::ostream& operator<< (std::ostream &out, const Symbol &s) {
 
 
 
-size_t Symbol::hash::operator()(const Symbol &s) const {
-    return (size_t) s.symbol;
-}
+

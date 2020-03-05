@@ -1,12 +1,16 @@
-#include "Grammar.h"
-#include "SetSymbols.h"
-#include "Symbol.h"
+#include "grammar/Grammar.h"
+#include "grammar/SetSymbols.h"
+#include "grammar/Symbol.h"
+#include "grammar/Production.h"
 #include <map>
 
-class GrammBuilder {
+class GrammarBuilder {
+public:
     GrammBuilder& setTerminalSet(SetSymbols terminalSet);
     GrammBuilder& setNonTerminalSet(SetSymbols nonTerminalSet);
     GrammBuilder& setAxiom(Symbol axiom);
-    GrammBuilder& addProduction(Production p);
-    Gramm build();
+    GrammBuilder& createInplaceProduction(SymbolsChain alpha, SymbolsChain betta);
+    Grammar build();
+private:
+    GrammarBuilder();
 };

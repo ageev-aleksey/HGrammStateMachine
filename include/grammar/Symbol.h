@@ -13,16 +13,25 @@ public:
     Symbol(const Symbol &s);
     Symbol& operator=(const Symbol &s);
     bool operator==(const Symbol &s) const;
+    char toChar() const;
 
-    class hash {
-    public:
-        size_t operator() (const Symbol& s) const;
-    };
+    friend class std::hash<Symbol>;
     friend std::ostream& operator<< (std::ostream &out, const Symbol &point);
 private:
     char symbol;
 };
 
+namespace std {
+    template<>
+    struct hash<Symbol> {
+        using result_ype = size_t;
+        using argument_type = Symbol;
+
+        size_t operator() (const Symbol &s) {
+            return (size_t ) s.symbol;
+        }
+    };
+}
 std::ostream& operator<< (std::ostream &out, const Symbol &s);
 
 #endif //STATE_MACHINE_SYMBOL_H

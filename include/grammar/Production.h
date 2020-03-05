@@ -11,9 +11,10 @@ class Production {
 public:
     Production(SymbolsChain a, SymbolsChain b, Grammar *g);
     ~Production();
-    SymbolsChain applay(SymbolsChain c);
+    //SymbolsChain applay(SymbolsChain c);
+  //  std::pair<int, int> isApplay(SymbolsChain c);
 private:
-    Gramm *grammar;
+    void alphabet_check(const Symbol &s) const;
     SymbolsChain a;
     SymbolsChain b;
 };

@@ -1,7 +1,7 @@
 //
 // Created by nrx on 04.03.2020.
 //
-#include "hgram/SetSymbols.h"
+#include "grammar/SetSymbols.h"
 
 SetSymbols::iterator::iterator(std::unordered_set<Symbol, Symbol::hash>::iterator itr) {
     this->itr = itr;

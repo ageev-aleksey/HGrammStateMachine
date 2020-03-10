@@ -9,7 +9,17 @@
 
 class IncorrectProduction : public std::logic_error {
 public:
-    IncorrectProduction(std::string msg);
+    IncorrectProduction(const std::string &msg);
 };
 
+
+class AlphabetError : public std::logic_error {
+public:
+    AlphabetError(const std::string &msg);
+};
+
+class BuildingException : public std::logic_error {
+public:
+    BuildingException(const std::string &msg);
+};
 #endif //STATE_MACHINE_INCORRECTPRODUCTION_H

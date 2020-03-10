@@ -3,17 +3,28 @@
 //
 #include "grammar/Symbol.h"
 
+Symbol::Symbol() {
+    symbol = EMPTY_SYMBOL;
+}
 
 Symbol::Symbol(char s) {
-    symbol = s;
+    set(s);
 }
 
 Symbol::Symbol(const Symbol &s) {
     symbol = s.symbol;
 }
 
+void Symbol::set(char s){
+    symbol = s;
+}
+
+bool Symbol::isEmptySymbol() const {
+    return symbol == EMPTY_SYMBOL;
+}
+
 Symbol& Symbol::operator=(const Symbol &s) {
-    symbol = s.symbol;
+    set(s.symbol);
 }
 
 bool Symbol::operator==(const Symbol &s) const {
@@ -28,6 +39,7 @@ std::ostream& operator<< (std::ostream &out, const Symbol &s) {
     return out;
 }
 
-
-
+bool Symbol::operator<(const Symbol &other) const {
+    return this->symbol < other.symbol;
+}
 

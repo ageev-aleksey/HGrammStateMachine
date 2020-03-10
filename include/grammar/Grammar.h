@@ -1,33 +1,73 @@
-#import "grammar/Symbol.h"
-#include "grammar/SetSymbols.h"
+#ifndef _GRAMMAR_H_
+#define _GRAMMAR_H_
+
+#include "grammar/definitions.h"
+#include "grammar/Productions.h"
 #include "grammar/Symbol.h"
-#include "grammar/Production.h"
-#include "grammar/SymbolsChain.h"
+#include <list>
 #include <map>
 #include <vector>
+#include <unordered_map>
+#include <unordered_set>
+
+
+
+
+
 
 class Grammar {
 public:
-    class Builder {
-    public:
-        Builder& setTerminalSet(SetSymbols terminalSet);
-        Builder& setNonTerminalSet(SetSymbols nonTerminalSet);
-        Builder& setAxiom(Symbol axiom);
-        Builder& createInplaceProduction(SymbolsChain alpha, SymbolsChain betta);
-        Grammar build();
 
-    private:
-        Builder(Grammar *grammar);
-        Grammar *g;
-        friend class Grammar;
-    };
+
+    ~Grammar();
     bool isTerminal(const Symbol &s) const;
     bool isNonTerminal(const Symbol &s) const;
-    Builder newBuilder();
+    const std::unordered_set<Symbol>& getTerminalSet() const;
+    const std::unordered_set<Symbol>& getNonTerminalSet() const;
+    const Symbol& getAxiom() const;
+    //std::vector<std::pair<std::vector<Symbol>, std::vector<Symbol>>> getProductions() const;
+
 
 private:
     Grammar();
-    SetSymbols terminals;
-    SetSymbols nonTerminals;
-    std::vector<Production> productions;
+    void setTerminals(const std::unordered_set<Symbol> &set);
+    void setNonTerminals(const std::unordered_set<Symbol> &set);
+    void setAxiom(const Symbol &s);
+    void addProduction(const SymbolsChain &alpha, const SymbolsChain &betta);
+    std::unordered_set<Symbol> terminals;
+    std::unordered_set<Symbol>  nonTerminals;
+    Symbol axiom;
+    Productions productions;
+    friend class RGrammarBuilder;
 };
+
+
+/*
+namespace std {
+    template<>
+    struct less <Grammar::SymbolsChain> {
+        explicit less() {
+
+        }
+        bool operator() (const Grammar::SymbolsChain &a, const Grammar::SymbolsChain &b) const {
+            size_t sizeA = a.size();
+            size_t sizeB = b.size();
+            if(sizeA < sizeB) {
+                return true;
+            } else if(sizeA > sizeB) {
+                return false;
+            }
+
+            for(auto itrA = a.begin(), itrB = b.end();
+                itrA != a.end(); itrA++, itrB++) {
+                if(*itrA < *itrB) {
+                    return true;
+                }
+            }
+            return false;
+
+        }
+    };
+}*/
+
+#endif

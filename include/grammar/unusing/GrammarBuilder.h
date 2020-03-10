@@ -1,7 +1,7 @@
 #include "grammar/Grammar.h"
 #include "grammar/SetSymbols.h"
 #include "grammar/Symbol.h"
-#include "grammar/Production.h"
+#include "grammar/Productions.h"
 #include <map>
 
 class GrammarBuilder {

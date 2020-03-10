@@ -9,11 +9,17 @@
 
 class Symbol {
 public:
+   static constexpr char EMPTY_SYMBOL = 0;
+    Symbol();
     Symbol(char s);
+    void set(char s);
     Symbol(const Symbol &s);
     Symbol& operator=(const Symbol &s);
-    bool operator==(const Symbol &s) const;
     char toChar() const;
+    bool isEmptySymbol() const;
+
+     bool operator<(const Symbol &other) const;
+     bool operator==(const Symbol &other) const;
 
     friend class std::hash<Symbol>;
     friend std::ostream& operator<< (std::ostream &out, const Symbol &point);
@@ -21,17 +27,26 @@ private:
     char symbol;
 };
 
-namespace std {
-    template<>
-    struct hash<Symbol> {
-        using result_ype = size_t;
-        using argument_type = Symbol;
 
-        size_t operator() (const Symbol &s) {
-            return (size_t ) s.symbol;
+namespace std {
+    template <>
+    class hash<Symbol> {
+    public:
+        size_t operator()(const Symbol &s) const
+        {
+            return (size_t) s.symbol;
+        }
+    };
+
+    template<>
+    class equal_to<Symbol> {
+    public:
+        bool operator() (const Symbol &left, const Symbol &right) const {
+            return left == right;
         }
     };
 }
+
 std::ostream& operator<< (std::ostream &out, const Symbol &s);
 
 #endif //STATE_MACHINE_SYMBOL_H

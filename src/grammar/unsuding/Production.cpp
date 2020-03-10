@@ -1,12 +1,12 @@
 //
 // Created by nrx on 05.03.2020.
 //
-#import "grammar/Production.h"
+#import "grammar/Productions.h"
 #import "grammar/Grammar.h"
-#import "grammar/exception/IncorrectProduction.h"
+#import "grammar/GrammarExceptions.h"
 #import <stdexcept>
 #include <sstream>
-
+/*
 Production::Production(SymbolsChain alpha, SymbolsChain betta, Grammar *g) {
     size_t  numberOfNonTerminalSymbol = 0;
     if(g == nullptr) {
@@ -32,15 +32,8 @@ Production::Production(SymbolsChain alpha, SymbolsChain betta, Grammar *g) {
     b = betta;
 
 }
+*/
 
-void Production::alphabet_check(const Symbol &s) const {
-    if(!grammar->isTerminal(s) || !grammar->isNonTerminal(s)) {
-        std::stringstream msg;
-        msg << "Symbol " << s.toChar()
-            <<  " is not containing in Terminal or NonTerminal alphabet";
-        throw IncorrectProduction(msg.str());
-    }
-}
 
 /*
 SymbolsChain Production::applay(SymbolsChain c) {

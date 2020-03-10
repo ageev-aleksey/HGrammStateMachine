@@ -1,7 +1,7 @@
 //
 // Created by nrx on 05.03.2020.
 //
-
+/*
 #include <unordered_map>
 #include "grammar/SymbolsChain.h"
 
@@ -120,3 +120,4 @@ SymbolsChain::iterator SymbolsChain::findSubChain(SymbolsChain &s) {
 }
 
 SymbolsChain &SymbolsChain::operator=(const SymbolsChain &other) = default;
+*/

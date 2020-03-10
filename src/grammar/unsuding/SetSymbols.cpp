@@ -1,6 +1,7 @@
 //
 // Created by nrx on 04.03.2020.
 //
+/*
 #include "grammar/SetSymbols.h"
 
 SetSymbols::iterator::iterator(std::unordered_set<Symbol, Symbol::hash>::iterator itr) {
@@ -69,4 +70,4 @@ SetSymbols::iterator SetSymbols::begin() {
 
 SetSymbols::iterator SetSymbols::end() {
     return iterator(set.end());
-}
+}*/

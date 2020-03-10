@@ -36,7 +36,7 @@ class iterator : public std::iterator<std::forward_iterator_tag,
     void remove(const Symbol &s);
     bool contain(const Symbol &s) const;
 private:
-    std::unordered_set<Symbol, Symbol::hash> set;
+    std::unordered_set<Symbol> set;
 };
 
 

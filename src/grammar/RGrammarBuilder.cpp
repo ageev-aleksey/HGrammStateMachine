@@ -7,6 +7,20 @@
 #include <iostream>
 #include <sstream>
 
+std::ostream& print_production(std::ostream &stream, const SymbolsChain &alpha, const SymbolsChain &betta) {
+
+    stream << "(";
+    for(const auto &s : alpha) {
+        stream << s;
+    }
+    stream << "; ";
+    for(const auto &s : betta) {
+        stream << s;
+    }
+    stream << ")";
+    return stream;
+
+}
 
 RGrammarBuilder::RGrammarBuilder() {
 }
@@ -98,8 +112,71 @@ Grammar RGrammarBuilder::build() {
         throw BuildingException("was not set a Non Terminal set");
     if (grammar.getAxiom().isEmptySymbol())
         throw BuildingException("was not set a Axiom symbol");
-    if(grammar.productions.empty())
+    if(grammar.getProductions().empty())
         throw BuildingException("was not set a productions");
+
+    for(const auto &el: grammar.getProductions()) {
+        if(el.first.size() != 1) {
+            std::stringstream msg;
+            msg << "Incorrect Production. "
+               "The production in Right linear grammar can't "
+               " more then one item in self right part. ";
+            print_production(msg, el.first, el.second);
+            throw BuildingException(msg.str());
+        }
+        if(!grammar.isNonTerminal(*el.first.begin())) {
+            std::stringstream msg;
+            msg << "Incorrect Production. "
+                   "First Symbol in right part of Production of Right linear grammar"
+                   "must be a Symbol from Non Terminal Alphabet";
+            print_production(msg, el.first, el.second);
+            throw BuildingException(msg.str());
+        }
+        // Последний символ в правой цепочке продукции должен быть терминалом или не терминалом
+        // остальные символы должны быть терминалами.
+        if(grammar.isNonTerminal(*(--el.second.end())) || grammar.isTerminal(*(--el.second.end()))) {
+            if(el.second.size() > 1) {
+                for(auto itr = --(--el.second.end()); itr != el.second.begin(); --itr){
+                    if(!grammar.isTerminal(*itr)) {
+                        std::stringstream msg;
+                        msg << "Incorrect Production. "
+                               "Incorrect right part of production. Production must have view as:"
+                               "(A; alpha,B); This Production: ";
+                        print_production(msg, el.first, el.second);
+                        throw BuildingException(msg.str());
+                    }
+                }
+                if(!grammar.isTerminal(*el.second.begin())) {
+                    std::stringstream msg;
+                    msg << "Incorrect Production. "
+                           "Incorrect right part of production. Production must have view as:"
+                           "(A; alpha,B); This Production: ";
+                    print_production(msg, el.first, el.second);
+                    throw BuildingException(msg.str());
+                }
+            }
+
+            //проверка условия, что если последний символ в правой части продукции терминал,
+            // то и все символы должны быть терминалами.
+        } else {
+            std::stringstream msg;
+            msg << "Incorrect Production. Last Symbol of right part of production"
+                   "don't belongs Terminal/NonTerminal Alphabet. ";
+            print_production(msg, el.first, el.second);
+            throw BuildingException(msg.str());
+        }
+    }
 
     return grammar;
 }
+
+Grammar RGrammarBuilder::build(GrammarStruct gs) {
+    grammar.setTerminals(gs.terminals);
+    grammar.setNonTerminals(gs.nonTerminals);
+    for(auto &el : gs.productions) {
+        grammar.addProduction(el.first, el.second);
+    }
+    grammar.setAxiom(gs.axiom);
+    return this->build();
+}
+

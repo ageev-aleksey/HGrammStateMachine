@@ -18,7 +18,7 @@ public:
         using value_type = std::pair<SymbolsChain, SymbolsChain>;
         using difference_type = std::ptrdiff_t;
         using pointer = value_type*;
-        using reference = std::pair<const SymbolsChain&, SymbolsChain&>;
+        using reference = std::pair<const SymbolsChain&, const SymbolsChain&>;
         iterator(const iterator &other);
         iterator& operator=(const iterator &other);
         bool operator==(const iterator &other) const;
@@ -27,19 +27,21 @@ public:
         iterator operator++(int);
         iterator& operator--();
         iterator operator--(int);
-        reference operator*();
+        const reference operator*();
        // const reference  operator*() const;
         //pointer operator->();
         //const pointer operator->() const;
 
     private:
-        iterator(std::map<SymbolsChain, std::list<SymbolsChain>, Comparator>::iterator a,
-                std::list<SymbolsChain>::iterator b,
-                 std::map<SymbolsChain, std::list<SymbolsChain>, Comparator>::iterator a_end);
-        std::list<SymbolsChain>::iterator current_betta;
-        std::map<SymbolsChain, std::list<SymbolsChain>, Comparator>::iterator current_alpha;
+        iterator(std::map<SymbolsChain, std::list<SymbolsChain>, Comparator>::const_iterator a,
+                 std::list<SymbolsChain>::const_iterator b,
+                 std::map<SymbolsChain, std::list<SymbolsChain>, Comparator>::const_iterator a_end);
+
+
+        std::list<SymbolsChain>::const_iterator current_betta;
+        std::map<SymbolsChain, std::list<SymbolsChain>, Comparator>::const_iterator current_alpha;
         //std::list<SymbolsChain>::iterator end_betta;
-        std::map<SymbolsChain, std::list<SymbolsChain>, Comparator>::iterator end_alpha;
+        std::map<SymbolsChain, std::list<SymbolsChain>, Comparator>::const_iterator end_alpha;
         friend class Productions;
     };
 
@@ -49,8 +51,8 @@ public:
     ~Productions();
     void addProduction(const SymbolsChain &alpha, const SymbolsChain &betta);
     bool empty() const;
-    iterator begin();
-    iterator end();
+    iterator begin() const;
+    iterator end() const;
     //const_iterator begin() const;
    // const_iterator end() const;
    // const_iterator cbegin() const;

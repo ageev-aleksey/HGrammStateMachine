@@ -23,12 +23,19 @@ bool Symbol::isEmptySymbol() const {
     return symbol == EMPTY_SYMBOL;
 }
 
+bool Symbol::isOneSymbol() const {
+    return symbol == ONE_SYMBOL;
+}
+
 Symbol& Symbol::operator=(const Symbol &s) {
     set(s.symbol);
 }
 
 bool Symbol::operator==(const Symbol &s) const {
     return symbol == s.symbol;
+}
+bool Symbol::operator!=(const Symbol &s) const {
+    return symbol != s.symbol;
 }
 char Symbol::toChar() const {
     return symbol;

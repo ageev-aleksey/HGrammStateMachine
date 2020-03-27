@@ -13,7 +13,7 @@ Grammar::~Grammar() {
 }
 
 bool Grammar::isTerminal(const Symbol &s) const{
-    return terminals.find(s) != nonTerminals.cend();
+    return (terminals.find(s) != nonTerminals.cend()) || (s.isEmptySymbol()) || s.isOneSymbol();
 }
 
 bool Grammar::isNonTerminal(const Symbol &s) const{
@@ -35,7 +35,7 @@ void Grammar::setAxiom(const Symbol &s) {
 }
 
 void Grammar::addProduction(const SymbolsChain &alpha, const SymbolsChain &betta) {
-
+    productions.addProduction(alpha, betta);
 }
 
 
@@ -49,6 +49,10 @@ const std::unordered_set<Symbol>& Grammar::getNonTerminalSet() const {
 
 const Symbol& Grammar::getAxiom() const {
     return axiom;
+}
+
+const Productions& Grammar::getProductions() const {
+    return productions;
 }
 
 /*

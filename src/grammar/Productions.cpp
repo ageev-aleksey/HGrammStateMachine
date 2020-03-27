@@ -28,18 +28,20 @@ bool Productions::empty() const {
     return productions.empty();
 }
 
-Productions::iterator Productions::begin() {
-    return iterator(productions.begin(), productions.begin()->second.begin(), productions.end());
+Productions::iterator Productions::begin() const {
+    //return iterator(productions.begin(), productions.begin()->second.begin(), productions.end());
+    return iterator(this->productions.cbegin(), this->productions.begin()->second.cbegin(), this->productions.cend());
 }
 
-Productions::iterator Productions::end() {
-    return iterator(--productions.end(), (--productions.end())->second.end(), productions.end());
+Productions::iterator Productions::end() const{
+    return iterator(--productions.cend(), (--productions.cend())->second.cend(), this->productions.cend());
 }
 
 
-Productions::iterator::iterator(std::map<SymbolsChain, std::list<SymbolsChain>, Comparator>::iterator a,
-                                std::list<SymbolsChain>::iterator b,
-                                std::map<SymbolsChain, std::list<SymbolsChain>, Comparator>::iterator end_a)
+
+Productions::iterator::iterator(std::map<SymbolsChain, std::list<SymbolsChain>, Comparator>::const_iterator a,
+                                std::list<SymbolsChain>::const_iterator b,
+                                std::map<SymbolsChain, std::list<SymbolsChain>, Comparator>::const_iterator end_a)
                                 : current_alpha(a),  current_betta(b), end_alpha(end_a) {
 
 }
@@ -48,7 +50,7 @@ Productions::iterator::iterator(const iterator &other) {
     *this = other;
 }
 
-Productions::iterator::reference Productions::iterator::operator*() {
+const Productions::iterator::reference Productions::iterator::operator*(){
     if(current_betta == current_alpha->second.end()) {
         current_alpha++;
         current_betta = current_alpha->second.begin();

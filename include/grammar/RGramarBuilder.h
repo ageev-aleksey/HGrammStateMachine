@@ -13,6 +13,7 @@ public:
     RGrammarBuilder& setAxiom(const Symbol &axiom);
     RGrammarBuilder& setProduction(const SymbolsChain &alpha, const SymbolsChain &betta);
     Grammar build();
+    Grammar build(GrammarStruct gs);
 private:
     void alphabet_check(const Symbol &s) const;
     void belong_to_alphabet_check(const Symbol &s) const;

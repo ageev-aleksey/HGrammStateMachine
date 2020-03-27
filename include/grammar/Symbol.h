@@ -9,7 +9,8 @@
 
 class Symbol {
 public:
-   static constexpr char EMPTY_SYMBOL = 0;
+    static constexpr char EMPTY_SYMBOL = '@';
+    static constexpr char ONE_SYMBOL = 'e';
     Symbol();
     Symbol(char s);
     void set(char s);
@@ -17,9 +18,11 @@ public:
     Symbol& operator=(const Symbol &s);
     char toChar() const;
     bool isEmptySymbol() const;
+    bool isOneSymbol() const;
 
      bool operator<(const Symbol &other) const;
      bool operator==(const Symbol &other) const;
+    bool operator!=(const Symbol &other) const;
 
     friend class std::hash<Symbol>;
     friend std::ostream& operator<< (std::ostream &out, const Symbol &point);

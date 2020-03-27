@@ -10,6 +10,12 @@
 #include <unordered_map>
 #include <unordered_set>
 
+struct GrammarStruct {
+    std::unordered_set<Symbol> terminals;
+    std::unordered_set<Symbol>  nonTerminals;
+    std::vector<std::pair<SymbolsChain, SymbolsChain>> productions;
+    Symbol axiom;
+};
 
 
 
@@ -25,7 +31,7 @@ public:
     const std::unordered_set<Symbol>& getTerminalSet() const;
     const std::unordered_set<Symbol>& getNonTerminalSet() const;
     const Symbol& getAxiom() const;
-    //std::vector<std::pair<std::vector<Symbol>, std::vector<Symbol>>> getProductions() const;
+    const Productions& getProductions() const;
 
 
 private:

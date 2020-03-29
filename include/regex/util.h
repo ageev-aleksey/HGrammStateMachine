@@ -46,6 +46,10 @@ namespace util {
         dot.append("}\n");
         return dot;
     }
+
+    template<>
+    std::string graphToDOT(Graph<std::pair<bool, std::set<size_t>>, char> &g);
+
     std::set<size_t> toGlueEpsilonTransition(const std::set<size_t> &cs, Graph<Empty, char> &g);
 
     /**
@@ -59,6 +63,9 @@ namespace util {
 
    // Graph<std::pair<bool, std::unordered_set<size_t>>, char>  convertNFSMtoDFSM(const Graph<Empty, char> &nfa);
     Graph<std::pair<bool, std::set<size_t>>, char> convertNFSMtoDFSM2(Graph<Empty, char>  &nfsm);
+
+    Graph<std::pair<bool, std::set<size_t>>, char> minimizeDFSM(Graph<std::pair<bool, std::set<size_t>>, char> &dfsm);
+
 }
 
 #endif //STATE_MACHINE_ALGORITHMS_H

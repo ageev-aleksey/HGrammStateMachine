@@ -14,6 +14,7 @@
 #include <queue>
 #include <set>
 #include <utility>
+#include <algorithm>
 
 namespace std {
     template<>
@@ -413,90 +414,153 @@ std::set<size_t> util::toGlueEpsilonTransition(const std::set<size_t> &cs, Graph
 
 Graph<std::pair<bool, std::set<size_t>>, char> util::convertNFSMtoDFSM2(Graph<Empty, char>  &nfsm) {
     Graph<std::pair<bool, std::set<size_t>>, char> result;
-    std::vector<GraphRItr> newSets;
     std::queue<std::set<size_t>> dontProcessedSet;
+     std::set<size_t> first_set =  util::toGlueEpsilonTransition({nfsm.firstNode().getIndex()}, nfsm);
+    //std::set<size_t> reachableStates = findTransition(currentStates, nfsm)
     dontProcessedSet.push({nfsm.firstNode().getIndex()});
     size_t indexEndState = nfsm.lastNode().getIndex();
-
-   // toGlueEpsiloneTransition(currentStates, nfsm)
-
-    //std::set<size_t> reachableStates = findTransition(currentStates, nfsm)
-
-
-
-    
-
     while(!dontProcessedSet.empty()) {
         std::set<size_t> currentStates = dontProcessedSet.front();
         dontProcessedSet.pop();
+        //выполняем склеивание епсилон переходов в одно множество подсостояний
+        currentStates = util::toGlueEpsilonTransition(currentStates, nfsm);
         //Проверяем, что такое же состояние уже не находится в новом графе
+        //Если состояние является подмножеством какого либо подстостояния в новом графе
+        //о его так же не надо обрабатывать
+        bool isStateAlreadyProcessed = false;
         for(auto &node : result.getNodes()) {
-            if(node.data.second == currentStates) {
-                continue;
-            }
-        }
-
-        //определяем епсилон переходы. склеевая их в одно состояние.
-        //нужен обход графа в глубину или ширину по епсилон переходам
-//        std::set<size_t> epsilonStates;
-//        size_t epsilonStatesSize = 0;
-//        do {
-//            epsilonStatesSize = epsilonStates.size();
-//            for (auto &el : currentStates) {
-//                for (auto &link : nfsm.getNodeByIndex(el).getLinks()) {
-//                    if (link.data == util::EPSILON) {
-//                        epsilonStates.insert(link.node.getIndex());
-//                    }
-//                }
-//            }
-//            auto itr = epsilonStates.begin();
-//            size_t index_state = *itr;
-//            epsilonStates.erase(itr);
-//            currentStates.insert(index_state);
-//        }
-//        while(epsilonStates.size() > epsilonStatesSize);
-//
-//        //currentStates.insert(epsilonStates.begin(), epsilonStates.end());
-
-        auto newSate = result.addNodeInBack({false, currentStates});
-
-        //Определеям. СОдержит ли состояние нового графа конечное состоеяние старого графа
-        for(auto &el : currentStates) {
-            if(el == indexEndState) {
-                newSate.getData().first = true;
+            std::set<size_t> resultOfIntersection;
+            std::set_intersection(node.data.second.begin(), node.data.second.end(),
+                                  currentStates.begin(), currentStates.end(),
+                                  std::inserter(resultOfIntersection, resultOfIntersection.begin()));
+            if(resultOfIntersection.size() == currentStates.size()) {
+                isStateAlreadyProcessed = true;
                 break;
             }
+//            if(node.data.second == currentStates) {
+//                isStateAlreadyProcessed = true;
+//                break;
+//            }
         }
-
-
-
-        //Определяем новые переходы
-        std::set<size_t> reachableStates;
-        for(auto &el : currentStates) {
-            for(auto &link :nfsm.getNodeByIndex(el).getLinks()) {
-                //if(link.data == util::EPSILON) continue;
-                //Необходимо проверить, существует ли узел в новом графе, содержащий текущий узел старого граффа
-                bool isContained = false;
-                for( auto nodeItr = result.getNodes().begin(); nodeItr != result.getNodes().end(); nodeItr++ ) {
-                    if(nodeItr->data.second.find(link.node.getIndex()) != nodeItr->data.second.end()) {
-                        //новый граф, уже содержит узел старого графа
-                        result.addLink(newSate, GraphRItr(nodeItr), link.data);
-                        isContained = true;
-                        break;
+        if(isStateAlreadyProcessed) {
+            continue;
+        }
+        //Если такое объединенное состояние отстутствует в графе то добавляем его
+        // 1. Проверяем. Содержит ли объединенное состояние конечного состояние исходного графа
+        bool isEndedState = false;
+        if(currentStates.find(indexEndState) != currentStates.end()) {
+            //новое состояние содержит конечное состояние исходного графа
+            //значит новое состояние будет конечным
+            isEndedState = true;
+        }
+        //2. Создаем новое состояние
+        auto newState = result.addNodeInBack({isEndedState, currentStates});
+        //3. Необходимо найти те состояния в новом графе, с которыми новый узел связан через подсостояние.
+        for(size_t state : currentStates) {
+            //Проходим по связанным состоянием с текущем состоянием
+            for(Graph<Empty, char>::Link &reachable_state_link : nfsm.getNodeByIndex(state).getLinks()) {
+                //если это связь епсилон перехода, то ее не надо обрабатывать
+                if(reachable_state_link.data == util::EPSILON) {
+                    continue;
+                }
+                size_t reachable_state = reachable_state_link.node.getIndex();
+                //проверяем, явялется ли достежимое состояние(reachable_state) из текущего состояния(state)
+                //подсостоянием состояние нового графа. Если это так, то создаем связь
+                for(Graph<std::pair<bool, std::set<size_t>>, char>::Node &newGraphStateNode : result.getNodes()) {
+//                    if(newGraphStateNode.index == newState.getIndex()) {
+//                        //проверять достижимость к себе нет необходимости
+//                        continue;
+//                    }
+                    std::set<size_t> &sub_states_set = newGraphStateNode.data.second;
+                    //если достижимое состояние(reachable_state) является подсостоянием, то создаем связь
+                    if(sub_states_set.find(reachable_state) != sub_states_set.end()) {
+                        result.addLink(newState, result.getNodeByIndex(newGraphStateNode.index), reachable_state_link.data);
                     }
                 }
-                if(isContained) continue;
-                //новый граф не имеет узлов ,которые содержат данный узел старого графа
-                reachableStates.insert(link.node.getIndex());
             }
         }
-        if(reachableStates.size() == 0) continue;
-        dontProcessedSet.push(reachableStates);
-        auto nexNode = result.addNodeInBack({false, reachableStates});
-       // result.addLink(currentStates, reachableStates);
+
+        //4.Необходимо найти те состояния в новом графе, которые связаны с новым состоянием через подсостояния.
+        for(Graph<std::pair<bool, std::set<size_t>>, char>::Node node : result.getNodes()) {
+            if(node.index == newState.getIndex()) {
+                //Проверять достежимось из от новый вершины к новой вершине нет необходимости
+                continue;
+            }
+            std::set<size_t> &substates = node.data.second;
+            size_t index_current_old_node = node.index;
+            for(size_t substate : substates) {
+                std::set<size_t> &substates_newState = newState.getData().second;
+                //substate - подсостояние старой вершины нового графа
+                //substates_newState - набор подсостояние новой вершины нового графа
+                //необходимо проверить, достежимо ли какоето подсостояние новой вершины из подсостояния сарой вершины
+                for(Graph<Empty, char>::Link &link_substate : nfsm.getNodeByIndex(substate).getLinks()) {
+                    //если это связь епсилон перехода, то ее не надо обрабатывать
+                    if(link_substate.data == util::EPSILON) {
+                        continue;
+                    }
+                    size_t reachable_state = link_substate.node.getIndex();
+                    //выполняем проверку достижимости
+                    if(substates_newState.find(reachable_state) != substates_newState.end()) {
+                        result.addLink(result.getNodeByIndex(node.index), newState, link_substate.data);
+                    }
+                }
+            }
+        }
+
+        //5. Необходимо сформировать множества состояний доступные  из текущего состояния
+        for(size_t state : currentStates) {
+            std::set<size_t> reachable_states;
+            for(Graph<Empty, char>::Link &link : nfsm.getNodeByIndex(state).getLinks()) {
+                reachable_states.insert(link.node.getIndex());
+            }
+            dontProcessedSet.push(reachable_states);
+        }
+
 
     }
 
     return result;
+
+}
+
+
+void nodeRepresentToDOT(const Graph<std::pair<bool, std::set<size_t>>, char>::Node &node, std::stringstream &format) {
+    format << "\"";
+    if(node.data.first) {
+        format << "*";
+    }
+    format << node.index << " {";
+    for(auto itr = node.data.second.begin(); itr != --(node.data.second.end()); itr++) {
+        format << *itr << "; ";
+    }
+    if(node.data.second.begin() != node.data.second.end()) {
+        format << *(--node.data.second.end());
+    }
+    format << "}\"";
+}
+
+template<>
+std::string util::graphToDOT(Graph<std::pair<bool, std::set<size_t>>, char> &g) {
+    std::string dot("digraph {\n");
+    auto& nodes = g.getNodes();
+    for(auto &el : nodes) {
+        for(auto &link : el.links) {
+           std::stringstream format;
+            nodeRepresentToDOT(el, format);
+            format << " -> ";
+            nodeRepresentToDOT(link.node.getNode(), format);
+            format << " [label=\"" << link.data << "\"]\n";
+            dot.append(format.str());
+        }
+        if(el.links.empty()) {
+            dot.append(std::to_string(el.index) + "\n");
+        }
+    }
+    dot.append("}\n");
+    return dot;
+}
+
+
+Graph<std::pair<bool, std::set<size_t>>, char> util::minimizeDFSM(Graph<std::pair<bool, std::set<size_t> >, char> &dfsm) {
 
 }

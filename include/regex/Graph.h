@@ -79,6 +79,9 @@ public:
         bool operator!=(const iterator &other) {
             return this->currentNode != other.currentNode;
         }
+        Node getNode() {
+            return *currentNode;
+        }
 
          std::list<Link>& getLinks()  {
             return currentNode->links;

@@ -2,3 +2,4 @@ build/
 cmake*/
 external_libs/
 .idea/
+graphviz/

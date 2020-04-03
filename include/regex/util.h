@@ -9,6 +9,7 @@
 #include <vector>
 #include <unordered_set>
 #include <set>
+#include <map>
 #include "regex/Graph.h"
 #include "regex/FSM.h"
 #include <utility>
@@ -64,8 +65,13 @@ namespace util {
    // Graph<std::pair<bool, std::unordered_set<size_t>>, char>  convertNFSMtoDFSM(const Graph<Empty, char> &nfa);
     Graph<std::pair<bool, std::set<size_t>>, char> convertNFSMtoDFSM2(Graph<Empty, char>  &nfsm);
 
-    Graph<std::pair<bool, std::set<size_t>>, char> minimizeDFSM(Graph<std::pair<bool, std::set<size_t>>, char> &dfsm);
+    std::vector<std::vector<bool>> buildTableOfNotEquivalentVertex(const std::vector<bool> &isTerminal,
+            const std::vector<std::map<char, std::vector<size_t>>> &tableOfBackLink, const std::set<char> &alphabet);
 
+    std::vector<std::map<char, std::vector<size_t>>> buildTableOfBackLink(Graph<std::pair<bool, std::set<size_t> >, char> &g);
+    Graph<std::pair<bool, std::set<size_t>>, char> minimizeDFSM(Graph<std::pair<bool, std::set<size_t>>, char> &dfsm);
+    std::vector<std::map<char, size_t>> buildConversionTable(Graph<std::pair<bool, std::set<size_t>>, char> &g);
+    void addDevilsVertex(Graph<std::pair<bool, std::set<size_t> >, char> &dfsm);
 }
 
 #endif //STATE_MACHINE_ALGORITHMS_H

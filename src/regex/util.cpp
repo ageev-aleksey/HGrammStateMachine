@@ -15,6 +15,7 @@
 #include <set>
 #include <utility>
 #include <algorithm>
+#include <map>
 
 namespace std {
     template<>
@@ -561,6 +562,179 @@ std::string util::graphToDOT(Graph<std::pair<bool, std::set<size_t>>, char> &g) 
 }
 
 
-Graph<std::pair<bool, std::set<size_t>>, char> util::minimizeDFSM(Graph<std::pair<bool, std::set<size_t> >, char> &dfsm) {
+std::vector<std::vector<bool>> util::buildTableOfNotEquivalentVertex(const std::vector<bool> &isTerminal,
+        const std::vector<std::map<char, std::vector<size_t>>> &tableOfBackLink, const std::set<char> &alphabet) {
+    std::queue<std::pair<size_t, size_t>> queue;
+    size_t n = isTerminal.size();
+    std::vector<std::vector<bool>> marked;
+    marked.resize(n);
+    for(size_t i = 0; i < n ; i++) {
+        marked[i].resize(n, false);
+    }
+    for(size_t i = 0; i < n; i++) {
+        for(size_t j = 0; j < n; j++) {
+            if((!marked[i][j]) && (isTerminal[i] != isTerminal[j])) {
+                marked[i][j] = true;
+                marked[j][i] = true;
+                queue.push({i, j});
+            }
+        }
+    }
 
+    while(!queue.empty()) {
+        std::pair<size_t, size_t> p = queue.front();
+        queue.pop();
+        for(char c : alphabet) {
+            auto &l1 = tableOfBackLink[p.first];
+            auto &l2 = tableOfBackLink[p.second];
+            auto element1 = l1.find(c);
+            auto element2 = l2.find(c);
+            if(element1 == l1.end()) continue;
+            for(size_t r : (*element1).second) {
+                if(element2 == l2.end()) continue;
+                for(size_t s : (*element2).second) {
+                    if(r == s) {
+                        continue;
+                    }
+                    if((!marked[r][s])) {
+                        marked[r][s] = true;
+                        marked[s][r] = true;
+                        queue.push({r ,s});
+                    }
+                }
+            }
+        }
+
+    }
+    return marked;
+}
+
+std::vector<std::map<char, std::vector<size_t>>> util::buildTableOfBackLink(Graph<std::pair<bool, std::set<size_t> >, char> &g) {
+    std::vector<std::map<char, std::vector<size_t>>> table;
+    size_t n = g.numNodes();
+    table.resize(n);
+    for(auto &el : g.getNodes()) {
+        for(auto &link : el.links) {
+            table[link.node.getIndex()][link.data].push_back(el.index);
+        }
+    }
+    return table;
+}
+
+void util::addDevilsVertex(Graph<std::pair<bool, std::set<size_t> >, char> &dfsm) {
+    std::set<char> alphabet = dfsm.getUniqueLinkData();
+    auto v = dfsm.addNodeInFront({false, {-1U}});
+    for(auto node = dfsm.begin(); node != dfsm.end(); ++node) {
+        for(auto s : alphabet) {
+            //добавляем связь только в том случае, если связи с таким символом нет
+           bool isLinkAlready = false;
+            for(auto &link: node.getLinks()) {
+                if(link.data == s) {
+                    isLinkAlready = true;
+                    break;
+                }
+            }
+            if(!isLinkAlready) {
+                dfsm.addLink(node, v, s);
+            }
+
+        }
+    }
+}
+
+Graph<std::pair<bool, std::set<size_t>>, char> util::minimizeDFSM(Graph<std::pair<bool, std::set<size_t> >, char> &dfsm) {
+    std::set<char> alphabet = dfsm.getUniqueLinkData();
+    //size_t n = dfsm.numNodes();
+    //1. Добавляем универсальную вершину, в которую имеют переход все состояния по всем символам алфавита автомата
+    addDevilsVertex(dfsm);
+    size_t n = dfsm.numNodes();
+    //2. Строим таблицу обратных ребер
+    std::vector<std::map<char, std::vector<size_t>>> tableOfBackLink = buildTableOfBackLink(dfsm);
+    //3 строим таблицу не эквивалентных вершин графа
+    std::vector<bool> isTerminal(n);
+    size_t i = 0;
+    for(auto itr = dfsm.begin(); itr != dfsm.end(); ++itr) {
+        isTerminal[i] = itr.getData().first;
+        i++;
+    }
+    std::vector<std::vector<bool>> tableNotEquivalent = buildTableOfNotEquivalentVertex(isTerminal,
+                                                                                        tableOfBackLink, alphabet);
+    //4. По таблице фомируем новый граф
+    //  - В строке таблицы не помеченные столбцы являются эквивалентными вершинами.
+    //  - Создаем вершину, которая будет заменой эквивалентных вершин.
+    //  - устанавливаем связи между вершинами, подвершины которых связаны в исходном графе
+    std::set<std::set<size_t>>equivalentSets;
+    for(size_t j = 1; j < n; j++) {
+        std::set<size_t> set;
+        set.insert(j);
+        for(size_t k = 1; k < n; k++) {
+            if(tableNotEquivalent[j][k] == false) {
+                set.insert(k);
+            }
+        }
+        equivalentSets.insert(std::move(set));
+    }
+    Graph<std::pair<bool, std::set<size_t>>, char> minFSM;
+    //Создание узлов содержащие классы эквивалентности
+    for(auto &set : equivalentSets) {
+        bool terminalNode = false;
+        for(size_t nodeIndex : set) {
+            if(isTerminal[nodeIndex]) {
+                terminalNode = true;
+                break;
+            }
+        }
+        minFSM.addNodeInBack({terminalNode, set});
+    }
+
+    //Создаем связи между узлами
+    for(auto node = minFSM.begin(); node != minFSM.end(); ++node) {
+        std::set<size_t> &subset = node.getData().second;
+        for(size_t index : subset) {
+            //ищем какие связи существовали в исходном графе
+            auto oldNode = dfsm.getNodeByIndex(index);
+            //проходим по связям данного узла
+            for(auto &oldLink : oldNode.getLinks()) {
+                //находм узел с подмножеством, содержащем индекс свзяного узла и создаем связь
+                for(auto node2 = minFSM.begin(); node2 != minFSM.end(); ++node2) {
+                   /* if(node == node2) {
+                        continue;
+                    }*/
+                    //если узел в подмножестве содержит этот индекс, то создаем связь между новыми узлами
+                    if(node2.getData().second.find( oldLink.node.getIndex()) != node2.getData().second.end()) {
+                        //Необходимо, проверить, что мы не дублируем связь
+                        //Если переход по такому символу уже существует, значит переход не надо добалвять.
+                        //Это верно, так как мы работаем с детерминированным автоматом
+                        bool isLinkAlready = false;
+                        for(auto &l : node.getLinks()) {
+                            if(l.data == oldLink.data) {
+                                isLinkAlready = true;
+                                break;
+                            }
+                        }
+
+                        if(isLinkAlready) continue;
+
+                        minFSM.addLink(node, node2, oldLink.data);
+                    }
+                }
+            }
+        }
+    }
+    return minFSM;
+}
+
+std::vector<std::map<char, size_t>> util::buildConversionTable(Graph<std::pair<bool, std::set<size_t>>, char> &g) {
+    std::set<char> alphabet = g.getUniqueLinkData();
+    std::map<char, size_t> init;
+    for(char s : alphabet) {
+        init[s] = -1;
+    }
+    std::vector<std::map<char, size_t>> result(g.numNodes(), init);
+    for(auto itr = g.begin(); itr != g.end(); ++itr) {
+        for(auto &link : itr.getLinks()) {
+            result[itr.getIndex()][link.data] = link.node.getIndex();
+        }
+    }
+    return result;
 }

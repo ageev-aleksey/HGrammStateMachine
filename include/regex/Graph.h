@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include<list>
+#include <set>
 #include "regex/RegexExceptions.h"
 
 struct Empty {
@@ -26,7 +27,7 @@ public:
 
         }
         Link(const Link &link) : node(link.node), data(link.data){
-            std::cout << "Link copy constructor" << std::endl;
+            //std::cout << "Link copy constructor" << std::endl;
         }
         Link& operator=(const Link &link) {
             data = link.data;
@@ -45,7 +46,7 @@ public:
             index = n.index;
         }
         Node(const Node &n) {
-            std::cout << "Node copy constructor" << std::endl;
+           // std::cout << "Node copy constructor" << std::endl;
             data = n.data;
             links = n.links;
             index = n.index;
@@ -76,7 +77,7 @@ public:
         bool operator==(const iterator &other) const {
             return this->currentNode == other.currentNode;
         }
-        bool operator!=(const iterator &other) {
+        bool operator!=(const iterator &other) const {
             return this->currentNode != other.currentNode;
         }
         Node getNode() {
@@ -103,6 +104,18 @@ public:
         bool isOwner(const Graph &graph) const{
             //return &graph == ownerPtr;
         }
+
+        iterator& operator++() {
+            currentNode++;
+            return *this;
+        }
+        iterator operator++(int) {
+            iterator tmp(*this);
+            *++this;
+            return tmp;
+        }
+
+
     private:
 
         typename std::list<Node>::iterator currentNode;
@@ -171,6 +184,18 @@ public:
             itr++;
         }
         return iterator(itr);
+    }
+
+    iterator end() {
+        return iterator(nodes.end());
+    }
+
+    iterator begin() {
+        return iterator(nodes.begin());
+    }
+
+    iterator convertIterator(const typename std::list<Node>::iterator &lnitr) {
+        return iterator(lnitr);
     }
 
 //    iterator addNode(iterator pos, const NodeData &data) {
@@ -258,6 +283,20 @@ public:
             el.index = i;
             i++;
         }
+    }
+
+    size_t numNodes() {
+        return nodes.size();
+    }
+
+    std::set<LinkData> getUniqueLinkData() {
+        std::set<LinkData> result;
+        for(auto &el : nodes) {
+            for(auto link : el.links) {
+                result.insert(link.data);
+            }
+        }
+        return result;
     }
 
 private:

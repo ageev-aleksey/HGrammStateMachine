@@ -1,6 +1,64 @@
 ////
 //// Created by nrx on 04.03.2020.
 ////
+
+#include "regex/Matcher.h"
+#include <iostream>
+
+void enterRegex(std::string &regex) {
+    std::cout << "-- Enter regular expression:\n";
+    std::cout << "> ";
+    std::cin >> regex;
+}
+
+
+int main() {
+    std::string regex;
+    std::string str;
+
+    enterRegex(regex);
+    Matcher m = Matcher::compile(regex);
+
+   std::cout << "-- Enter string for matching (\\q - for exit; \\r - change regex):\n";
+   std::cout << "> ";
+   while(std::cin >> str) {
+        if(str == "\\q") {
+            break;
+        } else if (str == "\\r") {
+            enterRegex(regex);
+            m = Matcher::compile(regex);
+        }
+       if(m.match(str)) {
+           std::cout << "string is matching\n";
+       } else {
+           std::cout << "string isn't matching\n";
+       }
+       std::cout << "-- Enter string for matching (\\q - for exit; \\r - change regex):\n";
+       std::cout << "> ";
+   }
+
+    std::cout << "good by!...\n";
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //#include "grammar/Symbol.h"
 //#include "grammar/RGramarBuilder.h"
 //#include "grammar/Grammar.h"

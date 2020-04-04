@@ -127,21 +127,43 @@ public:
     }
 
     Graph(const Graph& g) {
-        nodes = g.nodes;
-        for(auto &el : nodes) {
-            for(typename std::list<Link>::iterator itr = el.links.begin(); itr != el.links.end(); ++itr) {
-                size_t index_linked_node = itr->node.getIndex();
-                for(typename std::list<Node>::iterator nodes_itr = nodes.begin();
-                    nodes_itr != nodes.end(); ++nodes_itr) {
-                    if(nodes_itr->index == index_linked_node) {
-                        itr->node = iterator(nodes_itr);
-                        break;
-                    }
-                }
-            }
-        }
-    }
+//        nodes = g.nodes;
+//        for(auto &el : nodes) {
+//            for(typename std::list<Link>::iterator itr = el.links.begin(); itr != el.links.end(); ++itr) {
+//                size_t index_linked_node = itr->node.getIndex();
+//                for(typename std::list<Node>::iterator nodes_itr = nodes.begin();
+//                    nodes_itr != nodes.end(); ++nodes_itr) {
+//                    if(nodes_itr->index == index_linked_node) {
+//                        itr->node = iterator(nodes_itr);
+//                        break;
+//                    }
+//                }
+//            }
+//        }
+      *this = g;
 
+    }
+    Graph& operator=(const Graph& g) {
+        nodes.clear();
+        nodes.resize(g.nodes.size());
+        size_t i = 0;
+        for(auto &node : nodes){
+            node.index = i;
+            i++;
+        }
+
+        for(auto oldNode = g.nodes.begin(), node = nodes.begin(); oldNode != g.nodes.end();
+            ++oldNode, ++node) {
+            node->data = oldNode->data;
+            for(auto link = oldNode->links.begin(); link != oldNode->links.end();
+                ++link) {
+                Link l(link->data, getNodeByIndex(link->node.getIndex()));
+                node->links.push_back(l);
+            }
+
+        }
+        return *this;
+    }
     void addLink(iterator vertexBegin, iterator vertexEnd, const LinkData data) {
        /* if(!vertexBegin.isOwner(*this) || !vertexEnd.isOwner(*this)) {
             throw InvalidVertexException("The transmitted vertex does not belong to this graph");

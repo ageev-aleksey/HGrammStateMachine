@@ -9,10 +9,15 @@
 
 class Matcher {
 public:
+    Matcher(Matcher &m);
+    Matcher &operator=(Matcher &m);
+    Matcher &operator=(Matcher &&m);
+
     bool match(std::string str);
     static Matcher compile(std::string regex);
+
 private:
-    Matcher();
+    Matcher(Graph<std::pair<bool, std::set<size_t>>, char> g);
     Graph<std::pair<bool, std::set<size_t>>, char> fsm;
 
 };

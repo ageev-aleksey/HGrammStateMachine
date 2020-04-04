@@ -27,8 +27,8 @@ int main() {
         } else if (str == "\\r") {
             enterRegex(regex);
             m = Matcher::compile(regex);
-        }
-       if(m.match(str)) {
+
+        } else if(m.match(str)) {
            std::cout << "string is matching\n";
        } else {
            std::cout << "string isn't matching\n";

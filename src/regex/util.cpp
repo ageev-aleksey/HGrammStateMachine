@@ -179,9 +179,6 @@ Graph<Empty, char> util::graphFromRegex(const std::string regex) {
             auto tmp1 = g.addNodeInBack(Empty{});
             auto tmp2 = g.addNodeInBack(Empty{});
             g.addLink(tmp1, tmp2, el);
-            std::cout << "*****" << std::endl;
-            std::cout << util::graphToDOT(g) << std::endl;
-            std::cout << "*****" << std::endl;
             stack.push(g);
             //std::cout << util::graphToDOT(g);
         } else {

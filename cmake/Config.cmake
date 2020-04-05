@@ -1,0 +1,1 @@
+set(GTEST_ROOT ${CMAKE_CURRENT_LIST_DIR}/../external_libs/tests/gtest)

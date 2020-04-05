@@ -1,4 +1,4 @@
-file(GLOB SOURCE *.cpp ./grammar/*.cpp ./grammar/exeption/*.cpp ./regex/*.cpp)
+file(GLOB SOURCE ./regex/*.cpp)
 add_library(Grammar ${SOURCE})
 add_library(GL::Grammar ALIAS Grammar)
 add_executable(app ${SOURCE})

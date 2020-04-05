@@ -1,5 +1,4 @@
 build/
-cmake*/
-external_libs/
+cmake-*/
 .idea/
 graphviz/

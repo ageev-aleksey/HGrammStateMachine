@@ -5,14 +5,22 @@
 #include "regex/Graph.h"
 #include "regex/Matcher.h"
 #include "regex/util.h"
+#include "bprinter/table_printer.h"
 
 Matcher::Matcher(Graph<std::pair<bool, std::set<size_t>>, char> g) : fsm(g) {};
 
-Matcher Matcher::compile(std::string regex) {
+Matcher Matcher::compile(std::string regex, std::ostream &fileNfsm, std::ostream &fileDfsm, std::ostream &fileMinDfm) {
+    bprinter::TablePrinter tp(&std::cout);
     std::string pn = util::convertToRPN(regex);
+    std::cout << "regex to rpn: " << pn << std::endl;
     Graph<Empty, char> nfsm = util::graphFromRegex(pn);
+    auto t1 = util::buildConversionTable()
+    fileNfsm << util::graphToDOT(nfsm);
     Graph<std::pair<bool, std::set<size_t>>, char> dfsm = util::convertNFSMtoDFSM2(nfsm);
-    Matcher m(util::minimizeDFSM(dfsm));
+    fileDfsm << util::graphToDOT(dfsm);
+    auto minDFM = util::minimizeDFSM(dfsm);
+    fileMinDfm << util::graphToDOT(minDFM);
+    Matcher m(minDFM);
     return m;
 }
 

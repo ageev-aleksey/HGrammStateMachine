@@ -4,6 +4,7 @@
 
 #include "regex/Matcher.h"
 #include <iostream>
+#include <fstream>
 
 void enterRegex(std::string &regex) {
     std::cout << "-- Enter regular expression:\n";
@@ -15,19 +16,19 @@ void enterRegex(std::string &regex) {
 int main() {
     std::string regex;
     std::string str;
-
+    std::ofstream file1("NFSM.dot");
+    std::ofstream file2("DFSM.dot");
+    std::ofstream file3("FSM.dot");
     enterRegex(regex);
-    Matcher m = Matcher::compile(regex);
-
-   std::cout << "-- Enter string for matching (\\q - for exit; \\r - change regex):\n";
+    Matcher m = Matcher::compile(regex, file1, file2, file3);
+    file1.close();
+    file2.close();
+    file3.close();
+   std::cout << "-- Enter string for matching (\\q - for exit;):\n";
    std::cout << "> ";
    while(std::cin >> str) {
         if(str == "\\q") {
             break;
-        } else if (str == "\\r") {
-            enterRegex(regex);
-            m = Matcher::compile(regex);
-
         } else if(m.match(str)) {
            std::cout << "string is matching\n";
        } else {

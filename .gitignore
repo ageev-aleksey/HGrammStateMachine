@@ -1,4 +1,5 @@
 build/
 cmake-*/
+external_libs/test/gtest
 .idea/
 graphviz/

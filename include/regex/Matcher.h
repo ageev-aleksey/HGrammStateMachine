@@ -6,6 +6,7 @@
 #define STATE_MACHINE_MATCHER_H
 #include <set>
 #include "regex/Graph.h"
+#include <ostream>
 
 class Matcher {
 public:
@@ -14,7 +15,7 @@ public:
     Matcher &operator=(Matcher &&m);
 
     bool match(std::string str);
-    static Matcher compile(std::string regex);
+    static Matcher compile(std::string regex, std::ostream &fileNfsm,  std::ostream &fileDfsm, std::ostream &fileMinDfm);
 
 private:
     Matcher(Graph<std::pair<bool, std::set<size_t>>, char> g);

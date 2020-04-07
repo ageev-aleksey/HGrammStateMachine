@@ -20,11 +20,14 @@ if(${GNU})
     SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} --Wall --Werror ")
 endif()
 
-
-add_subdirectory(${EXTERNAL_LIBS_DIR}/main/rapidjson)
+add_subdirectory(${EXTERNAL_LIBS_DIR}/main/bprinter)
+include_directories(${EXTERNAL_LIBS_DIR}/main/bprinter/include)
 add_subdirectory(${SOURCE_DIR})
 
 if(${IS_TESTS})	
+
+add_subdirectory(${EXTERNAL_LIBS_DIR}/tests/googletest/googletest)
+include_directories(${EXTERNAL_LIBS_DIR}/tests/googletest/googletest/include)
 add_subdirectory(${TESTS_DIR})
 
 endif()

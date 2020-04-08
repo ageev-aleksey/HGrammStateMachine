@@ -13,8 +13,9 @@ TEST(TestConvertNFSMtoDFSM, removeOneEpsilonTramsmition) {
     g.addLink(v0, v1, 'a');
     g.addLink(v1, v0, util::EPSILON);
     auto dfsm = util::convertNFSMtoDFSM2(g);
-    std::cout << util::graphToDOT(g) << std::endl;
-    std::cout << util::graphToDOT(dfsm) << std::endl;
+    auto dfsmTable = util::buildConversionTable(dfsm);
+    std::vector<std::map<char, size_t>> rightTable = { { {'a', 1} } , { {'a', 1} } };
+    ASSERT_EQ(dfsmTable, rightTable);
 }
 
 TEST(TestConvertNFSMtoDFSM, ConvertStarOfKlini) {
@@ -31,13 +32,22 @@ TEST(TestConvertNFSMtoDFSM, ConvertStarOfKlini) {
     g.addLink(v2, v1, util::EPSILON);
     g.addLink(v3, v4, 'b');
     auto dfsm = util::convertNFSMtoDFSM2(g);
-    std::cout << util::graphToDOT(g) << std::endl;
-    std::cout << util::graphToDOT(dfsm) << std::endl;
+    auto dfsmTable = util::buildConversionTable(dfsm);
+    std::vector<std::map<char, size_t>> rightTable = { { {'a', 1}, {'b', 2} },
+                                                       { {'a', 1}, {'b', 2} },
+                                                       { {'a', -1}, {'b', -1}} };
+    ASSERT_EQ(dfsmTable, rightTable);
 }
 
 TEST(TestConvertNFSMtoDFSM, Regex) {
   Graph<Empty, char> g = util::graphFromRegex(util::convertToRPN("(a&(b|c))*&c"));
-  auto g2 = util::convertNFSMtoDFSM2(g);
-  std::cout << util::graphToDOT(g) << std::endl;
-    std::cout << util::graphToDOT(g2) << std::endl;
+  auto dfsm = util::convertNFSMtoDFSM2(g);
+  auto dfsmTable = util::buildConversionTable(dfsm);
+  std::vector<std::map<char, size_t>> rightTable = { { {'a', 1},  {'b', -1}, {'c', 2} },
+                                                     { {'a', -1},  {'b', 3}, {'c', 4} },
+                                                     { {'a', -1}, {'b', -1}, {'c', -1} },
+                                                     {  {'a', 1}, {'b', -1},  {'c', 2} },
+                                                     {  {'a', 1}, {'b', -1},  {'c', 2} }};
+    ASSERT_EQ(dfsmTable, rightTable);
+
 }

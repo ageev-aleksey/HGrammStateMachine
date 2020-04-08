@@ -410,115 +410,220 @@ std::set<size_t> util::toGlueEpsilonTransition(const std::set<size_t> &cs, Graph
 
 
 
-Graph<std::pair<bool, std::set<size_t>>, char> util::convertNFSMtoDFSM2(Graph<Empty, char>  &nfsm) {
-    Graph<std::pair<bool, std::set<size_t>>, char> result;
-    std::queue<std::set<size_t>> dontProcessedSet;
-     std::set<size_t> first_set =  util::toGlueEpsilonTransition({nfsm.firstNode().getIndex()}, nfsm);
-    //std::set<size_t> reachableStates = findTransition(currentStates, nfsm)
-    dontProcessedSet.push({nfsm.firstNode().getIndex()});
-    size_t indexEndState = nfsm.lastNode().getIndex();
-    while(!dontProcessedSet.empty()) {
-        std::set<size_t> currentStates = dontProcessedSet.front();
-        dontProcessedSet.pop();
-        //выполняем склеивание епсилон переходов в одно множество подсостояний
-        currentStates = util::toGlueEpsilonTransition(currentStates, nfsm);
-        //Проверяем, что такое же состояние уже не находится в новом графе
-        //Если состояние является подмножеством какого либо подстостояния в новом графе
-        //о его так же не надо обрабатывать
-        bool isStateAlreadyProcessed = false;
-        for(auto &node : result.getNodes()) {
-            std::set<size_t> resultOfIntersection;
-            std::set_intersection(node.data.second.begin(), node.data.second.end(),
-                                  currentStates.begin(), currentStates.end(),
-                                  std::inserter(resultOfIntersection, resultOfIntersection.begin()));
-            if(resultOfIntersection.size() == currentStates.size()) {
-                isStateAlreadyProcessed = true;
-                break;
-            }
-//            if(node.data.second == currentStates) {
+//Graph<std::pair<bool, std::set<size_t>>, char> util::convertNFSMtoDFSM2(Graph<Empty, char>  &nfsm) {
+//    Graph<std::pair<bool, std::set<size_t>>, char> result;
+//    std::queue<std::set<size_t>> dontProcessedSet;
+//     std::set<size_t> first_set =  util::toGlueEpsilonTransition({nfsm.firstNode().getIndex()}, nfsm);
+//    //std::set<size_t> reachableStates = findTransition(currentStates, nfsm)
+//    dontProcessedSet.push({nfsm.firstNode().getIndex()});
+//    size_t indexEndState = nfsm.lastNode().getIndex();
+//    while(!dontProcessedSet.empty()) {
+//        std::set<size_t> currentStates = dontProcessedSet.front();
+//        dontProcessedSet.pop();
+//        //выполняем склеивание епсилон переходов в одно множество подсостояний
+//        currentStates = util::toGlueEpsilonTransition(currentStates, nfsm);
+//        //Проверяем, что такое же состояние уже не находится в новом графе
+//        //Если состояние является подмножеством какого либо подстостояния в новом графе
+//        //о его так же не надо обрабатывать
+//        bool isStateAlreadyProcessed = false;
+//        for(auto &node : result.getNodes()) {
+//            std::set<size_t> resultOfIntersection;
+//            std::set_intersection(node.data.second.begin(), node.data.second.end(),
+//                                  currentStates.begin(), currentStates.end(),
+//                                  std::inserter(resultOfIntersection, resultOfIntersection.begin()));
+//            if(resultOfIntersection.size() == currentStates.size()) {
 //                isStateAlreadyProcessed = true;
 //                break;
 //            }
-        }
-        if(isStateAlreadyProcessed) {
-            continue;
-        }
-        //Если такое объединенное состояние отстутствует в графе то добавляем его
-        // 1. Проверяем. Содержит ли объединенное состояние конечного состояние исходного графа
-        bool isEndedState = false;
-        if(currentStates.find(indexEndState) != currentStates.end()) {
-            //новое состояние содержит конечное состояние исходного графа
-            //значит новое состояние будет конечным
-            isEndedState = true;
-        }
-        //2. Создаем новое состояние
-        auto newState = result.addNodeInBack({isEndedState, currentStates});
-        //3. Необходимо найти те состояния в новом графе, с которыми новый узел связан через подсостояние.
-        for(size_t state : currentStates) {
-            //Проходим по связанным состоянием с текущем состоянием
-            for(Graph<Empty, char>::Link &reachable_state_link : nfsm.getNodeByIndex(state).getLinks()) {
-                //если это связь епсилон перехода, то ее не надо обрабатывать
-                if(reachable_state_link.data == util::EPSILON) {
-                    continue;
-                }
-                size_t reachable_state = reachable_state_link.node.getIndex();
-                //проверяем, явялется ли достежимое состояние(reachable_state) из текущего состояния(state)
-                //подсостоянием состояние нового графа. Если это так, то создаем связь
-                for(Graph<std::pair<bool, std::set<size_t>>, char>::Node &newGraphStateNode : result.getNodes()) {
-//                    if(newGraphStateNode.index == newState.getIndex()) {
-//                        //проверять достижимость к себе нет необходимости
+////            if(node.data.second == currentStates) {
+////                isStateAlreadyProcessed = true;
+////                break;
+////            }
+//        }
+//        if(isStateAlreadyProcessed) {
+//            continue;
+//        }
+//        //Если такое объединенное состояние отстутствует в графе то добавляем его
+//        // 1. Проверяем. Содержит ли объединенное состояние конечного состояние исходного графа
+//        bool isEndedState = false;
+//        if(currentStates.find(indexEndState) != currentStates.end()) {
+//            //новое состояние содержит конечное состояние исходного графа
+//            //значит новое состояние будет конечным
+//            isEndedState = true;
+//        }
+//        //2. Создаем новое состояние
+//        auto newState = result.addNodeInBack({isEndedState, currentStates});
+//        //3. Необходимо найти те состояния в новом графе, с которыми новый узел связан через подсостояние.
+//        for(size_t state : currentStates) {
+//            //Проходим по связанным состоянием с текущем состоянием
+//            for(Graph<Empty, char>::Link &reachable_state_link : nfsm.getNodeByIndex(state).getLinks()) {
+//                //если это связь епсилон перехода, то ее не надо обрабатывать
+//                if(reachable_state_link.data == util::EPSILON) {
+//                    continue;
+//                }
+//                size_t reachable_state = reachable_state_link.node.getIndex();
+//                //проверяем, явялется ли достежимое состояние(reachable_state) из текущего состояния(state)
+//                //подсостоянием состояние нового графа. Если это так, то создаем связь
+//                for(Graph<std::pair<bool, std::set<size_t>>, char>::Node &newGraphStateNode : result.getNodes()) {
+////                    if(newGraphStateNode.index == newState.getIndex()) {
+////                        //проверять достижимость к себе нет необходимости
+////                        continue;
+////                    }
+//                    std::set<size_t> &sub_states_set = newGraphStateNode.data.second;
+//                    //если достижимое состояние(reachable_state) является подсостоянием, то создаем связь
+//                    if(sub_states_set.find(reachable_state) != sub_states_set.end()) {
+//                        result.addLink(newState, result.getNodeByIndex(newGraphStateNode.index), reachable_state_link.data);
+//                    }
+//                }
+//            }
+//        }
+//
+//        //4.Необходимо найти те состояния в новом графе, которые связаны с новым состоянием через подсостояния.
+//        for(Graph<std::pair<bool, std::set<size_t>>, char>::Node node : result.getNodes()) {
+//            if(node.index == newState.getIndex()) {
+//                //Проверять достежимось из от новый вершины к новой вершине нет необходимости
+//                continue;
+//            }
+//            std::set<size_t> &substates = node.data.second;
+//            size_t index_current_old_node = node.index;
+//            for(size_t substate : substates) {
+//                std::set<size_t> &substates_newState = newState.getData().second;
+//                //substate - подсостояние старой вершины нового графа
+//                //substates_newState - набор подсостояние новой вершины нового графа
+//                //необходимо проверить, достежимо ли какоето подсостояние новой вершины из подсостояния сарой вершины
+//                for(Graph<Empty, char>::Link &link_substate : nfsm.getNodeByIndex(substate).getLinks()) {
+//                    //если это связь епсилон перехода, то ее не надо обрабатывать
+//                    if(link_substate.data == util::EPSILON) {
 //                        continue;
 //                    }
-                    std::set<size_t> &sub_states_set = newGraphStateNode.data.second;
-                    //если достижимое состояние(reachable_state) является подсостоянием, то создаем связь
-                    if(sub_states_set.find(reachable_state) != sub_states_set.end()) {
-                        result.addLink(newState, result.getNodeByIndex(newGraphStateNode.index), reachable_state_link.data);
-                    }
+//                    size_t reachable_state = link_substate.node.getIndex();
+//                    //выполняем проверку достижимости
+//                    if(substates_newState.find(reachable_state) != substates_newState.end()) {
+//                        result.addLink(result.getNodeByIndex(node.index), newState, link_substate.data);
+//                    }
+//                }
+//            }
+//        }
+//
+//        //5. Необходимо сформировать множества состояний доступные  из текущего состояния
+//        for(size_t state : currentStates) {
+//            std::set<size_t> reachable_states;
+//            for(Graph<Empty, char>::Link &link : nfsm.getNodeByIndex(state).getLinks()) {
+//                reachable_states.insert(link.node.getIndex());
+//            }
+//            dontProcessedSet.push(reachable_states);
+//        }
+//
+//
+//    }
+//
+//    return result;
+//
+//}
+
+Graph<std::pair<bool, std::set<size_t>>, char> util::convertNFSMtoDFSM2(Graph<Empty, char>  &nfsm) {
+     std::queue<std::set<size_t>> dontProcessedSet;
+     std::vector<std::set<size_t>> alreadyProcessed;
+     std::set<size_t> first_set =  util::toGlueEpsilonTransition({nfsm.firstNode().getIndex()}, nfsm);
+    //std::set<size_t> reachableStates = findTransition(currentStates, nfsm)
+    dontProcessedSet.push(first_set);
+    size_t indexEndState = nfsm.lastNode().getIndex();
+    while(!dontProcessedSet.empty()) {
+        std::set<size_t> setStates = dontProcessedSet.front();
+        dontProcessedSet.pop();
+        //1 проверяем, что такое множество уже не обработано
+        bool isAlready = false;
+        for(auto itr = alreadyProcessed.begin(); itr != alreadyProcessed.end(); itr++) {
+            std::set<size_t> intersect_result;
+            std::set_intersection(setStates.begin(),setStates.end() ,
+                                  itr->begin(), itr->end(),
+                                 std::inserter(intersect_result, intersect_result.begin()));
+          //  if(intersect_result == setStates || intersect_result == *itr) {
+                if(intersect_result == setStates) {
+                    //  if(setStates == *itr) {
+                    isAlready = true;
+                    break;
                 }
-            }
+//            } else if(intersect_result == *itr) {
+//                   *itr = setStates;
+//                    isAlready = true;
+//                    break;
+//                }
         }
-
-        //4.Необходимо найти те состояния в новом графе, которые связаны с новым состоянием через подсостояния.
-        for(Graph<std::pair<bool, std::set<size_t>>, char>::Node node : result.getNodes()) {
-            if(node.index == newState.getIndex()) {
-                //Проверять достежимось из от новый вершины к новой вершине нет необходимости
-                continue;
-            }
-            std::set<size_t> &substates = node.data.second;
-            size_t index_current_old_node = node.index;
-            for(size_t substate : substates) {
-                std::set<size_t> &substates_newState = newState.getData().second;
-                //substate - подсостояние старой вершины нового графа
-                //substates_newState - набор подсостояние новой вершины нового графа
-                //необходимо проверить, достежимо ли какоето подсостояние новой вершины из подсостояния сарой вершины
-                for(Graph<Empty, char>::Link &link_substate : nfsm.getNodeByIndex(substate).getLinks()) {
-                    //если это связь епсилон перехода, то ее не надо обрабатывать
-                    if(link_substate.data == util::EPSILON) {
-                        continue;
-                    }
-                    size_t reachable_state = link_substate.node.getIndex();
-                    //выполняем проверку достижимости
-                    if(substates_newState.find(reachable_state) != substates_newState.end()) {
-                        result.addLink(result.getNodeByIndex(node.index), newState, link_substate.data);
-                    }
-                }
-            }
+        if(isAlready) {
+            continue;
         }
+        alreadyProcessed.push_back(setStates);
 
-        //5. Необходимо сформировать множества состояний доступные  из текущего состояния
-        for(size_t state : currentStates) {
-            std::set<size_t> reachable_states;
-            for(Graph<Empty, char>::Link &link : nfsm.getNodeByIndex(state).getLinks()) {
-                reachable_states.insert(link.node.getIndex());
-            }
-            dontProcessedSet.push(reachable_states);
+        //формируем новые множества, которые достижимы из state по одному и тому же символу
+        std::map<char, std::set<size_t>> reachableStates;
+        for(auto &state : setStates) {
+           auto nodeOfState = nfsm.getNodeByIndex(state);
+
+           for(auto &link : nodeOfState.getLinks()) {
+               if(link.data == util::EPSILON) continue;
+               reachableStates[link.data].insert(link.node.getIndex());
+           }
         }
-
-
+        for(auto el : reachableStates) {
+            dontProcessedSet.push(util::toGlueEpsilonTransition(el.second, nfsm));
+        }
     }
 
-    return result;
+    Graph<std::pair<bool, std::set<size_t>>, char> g;
+    for(auto el: alreadyProcessed) {
+        bool isTerminal = (el.find(nfsm.lastNode().getIndex()) != el.end());
+        g.addNodeInBack({isTerminal, el});
+    }
 
+    for(auto nItr = g.begin(); nItr != g.end(); ++nItr ) {
+        //рассматриваем каждое подсостояние
+        for(auto substate: nItr.getData().second) {
+            //Рассматриваем связи подсостояния в исходном графе
+            for(auto &oldLink : nfsm.getNodeByIndex(substate).getLinks()) {
+                //эпсилон переходы не рассматриваем
+                if(oldLink.data == util::EPSILON) continue;
+                //проверяем, что переход по такому символу отсутсвтует
+                bool linkIsAlready = false;
+                for(auto &newLinks : nItr.getLinks()) {
+                    if(newLinks.data == oldLink.data) {
+                        linkIsAlready = true;
+                        break;
+                    }
+                }
+                if(linkIsAlready) continue;
+                //Ищем в каком состоянии нового графа, находится достижимое подсостояние
+                bool isSelf = false;
+                //Сначало проверим, можем ли мы перейти сами в себя
+                if(nItr.getData().second.find(oldLink.node.getIndex()) != nItr.getData().second.end()) {
+                    isSelf = true;
+                }
+                for(auto nodeIteratorFind = g.begin(); nodeIteratorFind != g.end(); ++nodeIteratorFind) {
+                    if(nodeIteratorFind.getData().second.find(oldLink.node.getIndex()) != nodeIteratorFind.getData().second.end()){
+                        //мы нашли состояние, которое содержит достежимое подсостояние
+                        if(isSelf) {
+                            if(nodeIteratorFind.getData().second.size() > nItr.getData().second.size()) {
+                                isSelf = false;
+                                g.addLink(nItr, nodeIteratorFind, oldLink.data);
+                                break;
+                            }
+                        } else {
+                            g.addLink(nItr, nodeIteratorFind, oldLink.data);
+                            isSelf = false;
+                            break;
+                        }
+
+                    }
+                }
+                if(isSelf) {
+                    g.addLink(nItr, nItr, oldLink.data);
+                }
+
+            }
+        }
+
+    }
+    return g;
 }
 
 
